@@ -4,7 +4,7 @@ const { spawn } = require("child_process");
 const apps = [
   {
     name: "openlist",
-    binaryPath: "/home/container/oplist/openlist",
+    binaryPath: "/home/container/openlist",
     args: ["server", "--no-prefix"]
   }
 ];

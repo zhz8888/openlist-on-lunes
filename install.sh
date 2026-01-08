@@ -7,9 +7,6 @@ LITE="${LITE:-false}"
 curl -sSL -o app.js https://raw.githubusercontent.com/zhz8888/openlist-on-lunes/refs/heads/main/app.js
 curl -sSL -o package.json https://raw.githubusercontent.com/zhz8888/openlist-on-lunes/refs/heads/main/package.json
 
-# mkdir -p /home/container/oplist
-# cd /home/container/oplist
-
 if [ "$LITE" = "true" ]; then
   DOWNLOAD_URL="https://github.com/OpenListTeam/OpenList/releases/download/$VERSION/openlist-linux-amd64-lite.tar.gz"
 else
