@@ -24,7 +24,26 @@ env DOMAIN=node68.lunes.host VERSION='v4.1.9' LITE=false bash
 安装完成后，您需要手动修改配置文件，然后再启动节点。
 
 1. 进入控制面板，点击顶部的 `Files` 选项卡。
-2. 依次点击 `oplist` -> `data` -> `config.json`。
+2. 依次点击 `data` -> `config.json`。
+3. 修改 `scheme` 部分的内容，详细描述如下：
+    ```json
+    "scheme": {
+        "address": "node68.lunes.host", // 替换为系统分配的域名
+        "http_port": -1,  // 替换为系统分配的端口，与 https_port 二选一，不使用该端口则设为 -1
+        "https_port": 3147,  // 替换为系统分配的端口，与 http_port 二选一，不使用该端口则设为 -1
+        "force_https": true,  // 是否强制使用 HTTPS，当使用 HTTPS 端口时建议设为 true
+        "cert_file": "/home/container/cert.pem",
+        "key_file": "/home/container/key.pem",
+        "unix_file": "",
+        "unix_file_perm": "",
+        "enable_h2c": false,
+        "enable_h3": false
+    },
+    ```
+    更多相关配置请参考 [OpenList 文档](https://doc.oplist.org/configuration/configuration#scheme)。
+4. 点击右下角的 `SAVE CONTENT` 按钮保存配置文件。
+5. 点击顶部的 `Startup` 选项卡，把 `Startup command` 中输的值改为 `node app.js`。
+6. 点击顶部的 `Console` 选项卡回到首页，点击 `Restart` 按钮重启节点。
 
 ## 许可证
 
