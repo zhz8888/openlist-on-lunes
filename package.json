@@ -1,0 +1,11 @@
+{
+  "name": "openlist-on-lunes",
+  "version": "1.0.0",
+  "description": "openlist Startup Script for Lunes Host LLC",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "author": "zhz8888",
+  "license": "MIT"
+}
