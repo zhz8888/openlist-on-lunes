@@ -4,15 +4,16 @@
 
 ### 快速开始
 
-1. 登录 Lunes Host 控制面板，进入对应的节点中。
-2. 点击顶部的 `Startup` 选项卡，把 `STARTUP COMMAND` 中输的值改为 `bash`。
-3. 点击顶部的 `Console` 选项卡回到首页，点击 `Start` 按钮启动节点。
-4. 节点启动后，执行以下命令安装 OpenList：
+1. 确保您在创建节点时选择的应用为 `node.js generic`。
+2. 登录 Lunes Host 控制面板，进入对应的节点中。
+3. 点击顶部的 `Startup` 选项卡，把 `STARTUP COMMAND` 中输的值改为 `bash`。
+4. 点击顶部的 `Console` 选项卡回到首页，点击 `Start` 按钮启动节点。
+5. 节点启动后，执行以下命令安装 OpenList：
     ```bash
     curl -s https://raw.githubusercontent.com/zhz8888/openlist-on-lunes/refs/heads/main/install.sh |
     env DOMAIN=node68.lunes.host VERSION='v4.1.9' LITE=false bash
     ```
-    需要把 `node68.lunes.host` 替换为您系统分配的域名。
+    需要把 `node68.lunes.host` 替换为系统分配的域名。
 
 ### 环境变量
 
@@ -20,7 +21,7 @@
 
 | 变量 | 默认值 | 描述 |
 |----------|---------|-------------|
-| `DOMAIN` | `node68.lunes.host` | SSL 证书的域名 |
+| `DOMAIN` | `node68.lunes.host` | 系统分配的域名 |
 | `VERSION` | `v4.1.9` | 要安装的 OpenList 版本 |
 | `LITE` | `false` | 安装精简版（true/false） |
 
