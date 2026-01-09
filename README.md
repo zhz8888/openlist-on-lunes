@@ -35,9 +35,9 @@
     ```json
     "scheme": {
         "address": "node68.lunes.host", // 替换为系统分配的域名
-        "http_port": -1,  // 替换为系统分配的端口，与 https_port 二选一，不使用该端口则设为 -1
-        "https_port": 3147,  // 替换为系统分配的端口，与 http_port 二选一，不使用该端口则设为 -1
-        "force_https": true,  // 是否强制使用 HTTPS，当使用 HTTPS 端口时建议设为 true
+        "http_port": 3147,  // 替换为系统分配的端口，与 https_port 二选一，不使用该端口则设为 -1
+        "https_port": -1,  // 替换为系统分配的端口，与 http_port 二选一，不使用该端口则设为 -1
+        "force_https": false,  // 是否强制使用 HTTPS，当使用 HTTPS 端口时建议设为 true
         "cert_file": "/home/container/cert.pem",
         "key_file": "/home/container/key.pem",
         "unix_file": "",
