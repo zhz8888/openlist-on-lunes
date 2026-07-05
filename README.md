@@ -11,7 +11,7 @@
 5. 节点启动后，执行以下命令安装 OpenList：
     ```bash
     curl -s https://raw.githubusercontent.com/zhz8888/openlist-on-lunes/refs/heads/main/install.sh |
-    env DOMAIN=node68.lunes.host VERSION='v4.1.9' LITE=false bash
+    env DOMAIN=node68.lunes.host VERSION='v4.2.3' LITE=false bash
     ```
     需要把 `node68.lunes.host` 替换为系统分配的域名。
 
@@ -22,7 +22,7 @@
 | 变量 | 默认值 | 描述 |
 |----------|---------|-------------|
 | `DOMAIN` | `node68.lunes.host` | 系统分配的域名 |
-| `VERSION` | `v4.1.9` | 要安装的 OpenList 版本 |
+| `VERSION` | `v4.2.3` | 要安装的 OpenList 版本 |
 | `LITE` | `false` | 安装精简版（true/false） |
 
 ## 配置
@@ -34,7 +34,7 @@
 3. 修改 `scheme` 部分的内容，详细描述如下：
     ```json
     "scheme": {
-        "address": "node68.lunes.host", // 替换为系统分配的域名
+        "address": "0.0.0.0", // 建议设置为 0.0.0.0，允许所有 IP 地址访问
         "http_port": 3147,  // 替换为系统分配的端口，与 https_port 二选一，不使用该端口则设为 -1
         "https_port": -1,  // 替换为系统分配的端口，与 http_port 二选一，不使用该端口则设为 -1
         "force_https": false,  // 是否强制使用 HTTPS，当使用 HTTPS 端口时建议设为 true

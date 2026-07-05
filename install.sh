@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 DOMAIN="${DOMAIN:-node68.lunes.host}"
-VERSION="${VERSION:-v4.1.9}"
+VERSION="${VERSION:-v4.2.3}"
 LITE="${LITE:-false}"
 
 curl -sSL -o app.js https://raw.githubusercontent.com/zhz8888/openlist-on-lunes/refs/heads/main/app.js
