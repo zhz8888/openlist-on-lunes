@@ -9,8 +9,8 @@ DOMAIN="${DOMAIN:-node68.lunes.host}"
 PORT="${PORT:-10008}"
 UUID="${UUID:-2584b733-9095-4bec-a7d5-62b473540f7a}"
 HY2_PASSWORD="${HY2_PASSWORD:-vevc.HY2.Password}"
-VERSION_XRAY="${VERSION_XRAY:-v25.8.3}"
-VERSION_HY2="${VERSION_HY2:-v2.6.2}"
+VERSION_XRAY="${VERSION_XRAY:-v26.3.27}"
+VERSION_HY2="${VERSION_HY2:-v2.9.3}"
 
 # ---------- Paths ----------
 XRAY_DIR="/home/container/xy"

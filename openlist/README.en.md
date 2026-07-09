@@ -12,7 +12,7 @@ This project provides all the files needed to quickly deploy OpenList on a Lunes
 |------|-------------|
 | `install.sh` | One-click installer — auto-detects environment, downloads dependencies, installs the binary, and generates SSL certificates |
 | `app.js` | Node.js process manager — starts and keeps the OpenList process alive with auto-restart on crash |
-| `package.json` | Node.js project definition (v1.0.2) |
+| `package.json` | Node.js project definition (v1.1.0) |
 
 ### About app.js
 

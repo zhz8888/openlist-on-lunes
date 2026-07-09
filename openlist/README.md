@@ -12,7 +12,7 @@
 |------|------|
 | `install.sh` | 一键安装脚本 — 自动检测环境、下载依赖、安装二进制文件、生成 SSL 证书 |
 | `app.js` | Node.js 进程管理器 — 负责启动和维护 OpenList 进程，崩溃后自动重启 |
-| `package.json` | Node.js 项目定义（v1.0.2） |
+| `package.json` | Node.js 项目定义（v1.1.0） |
 
 ### app.js 说明
 
