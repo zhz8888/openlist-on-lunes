@@ -10,16 +10,20 @@ This project provides all the files needed to quickly deploy OpenList on a Lunes
 
 | File | Description |
 |------|-------------|
-| `install.sh` | One-click installer — auto-detects environment, downloads dependencies, installs the binary, and generates SSL certificates |
-| `app.js` | Node.js process manager — starts and keeps the OpenList process alive with auto-restart on crash |
-| `package.json` | Node.js project definition (v1.1.0) |
+| `install.sh` | Basic installer — installs OpenList without Komari Agent |
+| `install2.sh` | Enhanced installer — installs OpenList + Komari Agent with dynamic version resolution and SHA256 verification |
+| `app.js` | Node.js process manager — manages OpenList process only (for install.sh) |
+| `app2.js` | Node.js process manager — manages OpenList and Komari Agent processes (for install2.sh) |
+| `package.json` | Node.js project definition (v1.2.0) |
 
-### About app.js
+### About app.js / app2.js
 
-`app.js` is a lightweight process manager that:
-- Launches the `/home/container/openlist` binary with the `server --no-prefix` arguments
-- Inherits the child process stdio to the main process for proper log output
-- Automatically restarts the OpenList process after a 3-second delay if it crashes unexpectedly
+`app.js` and `app2.js` are lightweight process managers that launch the OpenList binary with `server --no-prefix` arguments and auto-restart on crash (3-second delay):
+
+| File | Managed Processes |
+|------|------------------|
+| `app.js` | **OpenList** |
+| `app2.js` | **OpenList**, **Komari Agent** (monitoring/alerting agent) |
 
 ## Quick Start
 
@@ -29,8 +33,14 @@ This project provides all the files needed to quickly deploy OpenList on a Lunes
 4. Click the **Console** tab to return to the dashboard, then click **Start** to boot the node.
 5. Once the node is running, execute the following command in the console to install OpenList:
 
+    **Basic install (without Komari Agent):**
     ```bash
     curl -s https://raw.githubusercontent.com/zhz8888/lunes-bedroom/refs/heads/main/openlist/install.sh | env DOMAIN=node68.lunes.host VERSION='v4.2.3' LITE=false bash
+    ```
+
+    **Enhanced install (with Komari Agent):**
+    ```bash
+    curl -s https://raw.githubusercontent.com/zhz8888/lunes-bedroom/refs/heads/main/openlist/install2.sh | env DOMAIN=node68.lunes.host VERSION='v4.2.3' LITE=false bash
     ```
 
     > Replace `node68.lunes.host` with the domain assigned to your node.
@@ -42,12 +52,16 @@ You can customize the installation process by setting the following environment 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `DOMAIN` | `node68.lunes.host` | Domain assigned to your node, used for the SSL certificate CN |
-| `VERSION` | `v4.2.3` | OpenList version to install |
+| `VERSION` | Auto-detected | OpenList version (fetched via GitHub API) |
 | `LITE` | `false` | Install the lite version (`true`/`false`) |
+| `KOMARI_ENABLED` | `true` | Enable Komari Agent (install2.sh only) |
+| `KOMARI_VERSION` | Auto-detected | Komari Agent version (fetched via GitHub API) |
+| `KOMARI_SERVER` | `http://localhost:9182` | Komari server address (install2.sh only) |
+| `KOMARI_TOKEN` | `default` | Komari authentication token (install2.sh only) |
 
 ### Install Script Details
 
-`install.sh` performs 5 steps in sequence, each with timestamped, color-coded log output:
+Basic installer `install.sh` steps:
 
 | Step | Description |
 |------|-------------|
@@ -57,7 +71,17 @@ You can customize the installation process by setting the following environment 
 | **Step 4** | Extract and Install — extract archive, clean up temp files, set executable permissions, verify file integrity |
 | **Step 5** | Generate SSL Self-Signed Certificate — creates a 3650-day certificate using `DOMAIN` as the CN |
 
-After installation, an **Installation Summary** is displayed, including execution statistics (success/warning/error counts), file list with sizes, and recommended next steps.
+Enhanced installer `install2.sh` steps:
+
+| Step | Description |
+|------|-------------|
+| **Step 1** | Environment Check — verify required tools and disk space |
+| **Step 2** | Download Application Files — fetch `app2.js` (with Komari Agent pre-configured) and `package.json`, rename to `app.js` |
+| **Step 3** | Download OpenList Binary — select version based on `LITE` variable |
+| **Step 4** | Download Komari Agent Binary — create installation directory, download agent (controlled via `KOMARI_ENABLED`) |
+| **Step 5** | Verify SHA256 Checksum — verify SHA256 checksums for both OpenList and Komari Agent via GitHub API |
+| **Step 6** | Extract and Install — extract OpenList, install Komari Agent, set permissions, verify file integrity |
+| **Step 7** | Generate SSL Self-Signed Certificate |
 
 ## Configuration
 

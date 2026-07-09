@@ -10,20 +10,22 @@ This project provides all the files needed to quickly deploy a proxy node on a L
 
 | File | Description |
 |------|-------------|
-| `install.sh` | One-click installer — auto-detects environment, downloads dependencies, installs Xray and Hysteria2, and generates SSL certificates |
-| `app.js` | Node.js process manager — keeps both XY and H2 processes alive with auto-restart on crash |
+| `install.sh` | Basic installer — installs Xray + Hysteria2 without Komari Agent |
+| `install2.sh` | Enhanced installer — installs Xray + Hysteria2 + Komari Agent with dynamic version resolution and SHA256 verification |
+| `app.js` | Node.js process manager — manages XY and H2 processes only (for install.sh) |
+| `app2.js` | Node.js process manager — manages XY, H2, and Komari Agent processes (for install2.sh) |
 | `xray-config.json` | VLESS Reality configuration template |
 | `hysteria-config.yaml` | Hysteria2 configuration template |
-| `package.json` | Node.js project definition (v1.1.0) |
+| `package.json` | Node.js project definition (v1.2.0) |
 
-### About app.js
+### About app.js / app2.js
 
-`app.js` is a lightweight process manager that manages two child processes simultaneously:
+`app.js` and `app2.js` are lightweight process managers that keep child processes alive with auto-restart on crash (3-second delay):
 
-- **XY (Xray)** — Launches `/home/container/xy/xy` with `-c /home/container/xy/config.json` arguments
-- **H2 (Hysteria2)** — Launches `/home/container/h2/h2` with `server -c /home/container/h2/config.yaml` arguments
-
-When either child process exits unexpectedly, it is automatically restarted after a 3-second delay.
+| File | Managed Processes |
+|------|------------------|
+| `app.js` | **XY** (Xray), **H2** (Hysteria2) |
+| `app2.js` | **XY** (Xray), **H2** (Hysteria2), **Komari Agent** (monitoring/alerting agent) |
 
 ## Quick Start
 
@@ -33,8 +35,14 @@ When either child process exits unexpectedly, it is automatically restarted afte
 4. Click the **Console** tab to return to the dashboard, then click **Start** to boot the node.
 5. Once the node is running, execute the following command in the console to install the node software:
 
+    **Basic install (without Komari Agent):**
     ```bash
     curl -s https://raw.githubusercontent.com/zhz8888/lunes-bedroom/refs/heads/main/node/install.sh | env DOMAIN=node68.lunes.host PORT=3147 UUID=2584b733-9095-4bec-a7d5-62b473540f7a HY2_PASSWORD='vevc.HY2.Password' bash
+    ```
+
+    **Enhanced install (with Komari Agent):**
+    ```bash
+    curl -s https://raw.githubusercontent.com/zhz8888/lunes-bedroom/refs/heads/main/node/install2.sh | env DOMAIN=node68.lunes.host PORT=3147 UUID=2584b733-9095-4bec-a7d5-62b473540f7a HY2_PASSWORD='vevc.HY2.Password' bash
     ```
 
     > Replace `node68.lunes.host` with the domain assigned to your node, and `3147` with the port assigned by the system.
@@ -49,12 +57,16 @@ You can customize the installation process by setting the following environment 
 | `PORT` | `10008` | Proxy service port |
 | `UUID` | `2584b733-...` | VLESS user ID |
 | `HY2_PASSWORD` | `vevc.HY2.Password` | Hysteria2 authentication password |
-| `VERSION_XRAY` | `v26.3.27` | Xray-core version |
-| `VERSION_HY2` | `v2.9.3` | Hysteria2 version |
+| `VERSION_XRAY` | Auto-detected | Xray-core version (fetched via GitHub API) |
+| `VERSION_HY2` | Auto-detected | Hysteria2 version (fetched via GitHub API) |
+| `KOMARI_ENABLED` | `true` | Enable Komari Agent (install2.sh only) |
+| `KOMARI_VERSION` | Auto-detected | Komari Agent version (fetched via GitHub API) |
+| `KOMARI_SERVER` | `http://localhost:9182` | Komari server address (install2.sh only) |
+| `KOMARI_TOKEN` | `default` | Komari authentication token (install2.sh only) |
 
 ### Install Script Details
 
-`install.sh` performs 5 steps in sequence, each with timestamped, color-coded log output:
+Basic installer `install.sh` steps:
 
 | Step | Description |
 |------|-------------|
@@ -64,7 +76,16 @@ You can customize the installation process by setting the following environment 
 | **Step 4** | Setup Hysteria2 — download binary, generate SSL certificate, configure port and password, generate HY2 URL |
 | **Step 5** | Save Connection Info — write VLESS and Hysteria2 connection URLs to `/home/container/node.txt` |
 
-After installation, an **Installation Summary** is displayed, including execution statistics (success/warning/error counts), configuration info, and connection URLs.
+Enhanced installer `install2.sh` steps:
+
+| Step | Description |
+|------|-------------|
+| **Step 1** | Environment Check — verify required tools and disk space |
+| **Step 2** | Download Application Files — fetch `app2.js` (with Komari Agent pre-configured) and `package.json`, rename to `app.js` |
+| **Step 3** | Setup Xray Core — download, key generation, Reality configuration |
+| **Step 4** | Setup Hysteria2 — download, SSL certificate, configuration |
+| **Step 5** | Setup Komari Agent — download agent binary, set permissions, verify installation (controlled via `KOMARI_ENABLED`) |
+| **Step 6** | Save Connection Info — write connection URLs |
 
 ## Configuration
 

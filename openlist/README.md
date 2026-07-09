@@ -10,16 +10,20 @@
 
 | 文件 | 说明 |
 |------|------|
-| `install.sh` | 一键安装脚本 — 自动检测环境、下载依赖、安装二进制文件、生成 SSL 证书 |
-| `app.js` | Node.js 进程管理器 — 负责启动和维护 OpenList 进程，崩溃后自动重启 |
-| `package.json` | Node.js 项目定义（v1.1.0） |
+| `install.sh` | 基础安装脚本 — 安装 OpenList，不含 Komari Agent |
+| `install2.sh` | 增强安装脚本 — 安装 OpenList + Komari Agent，含动态版本解析与 SHA256 校验 |
+| `app.js` | Node.js 进程管理器 — 仅守护 OpenList 进程（供 install.sh 使用） |
+| `app2.js` | Node.js 进程管理器 — 守护 OpenList 和 Komari Agent 两个进程（供 install2.sh 使用） |
+| `package.json` | Node.js 项目定义（v1.2.0） |
 
-### app.js 说明
+### app.js / app2.js 说明
 
-`app.js` 是一个轻量级的进程管理脚本，它会：
-- 以 `server --no-prefix` 参数启动 `/home/container/openlist` 二进制文件
-- 将子进程的 stdio 继承到主进程，确保日志正常输出
-- 当 OpenList 进程异常退出时，等待 3 秒后自动重启
+`app.js` 和 `app2.js` 是轻量级的进程管理脚本，以 `server --no-prefix` 参数启动 OpenList 二进制文件，崩溃后等待 3 秒自动重启：
+
+| 文件 | 管理的进程 |
+|------|-----------|
+| `app.js` | **OpenList** |
+| `app2.js` | **OpenList**、**Komari Agent**（监控/告警 agent） |
 
 ## 快速开始
 
@@ -29,8 +33,14 @@
 4. 点击顶部的 `Console` 选项卡回到首页，点击 **Start** 按钮启动节点。
 5. 节点启动后，在控制台中执行以下命令安装 OpenList：
 
+    **基础安装（不含 Komari Agent）：**
     ```bash
     curl -s https://raw.githubusercontent.com/zhz8888/lunes-bedroom/refs/heads/main/openlist/install.sh | env DOMAIN=node68.lunes.host VERSION='v4.2.3' LITE=false bash
+    ```
+
+    **增强安装（含 Komari Agent）：**
+    ```bash
+    curl -s https://raw.githubusercontent.com/zhz8888/lunes-bedroom/refs/heads/main/openlist/install2.sh | env DOMAIN=node68.lunes.host VERSION='v4.2.3' LITE=false bash
     ```
 
     > 请将 `node68.lunes.host` 替换为系统分配的域名。
@@ -42,12 +52,16 @@
 | 变量 | 默认值 | 描述 |
 |----------|---------|-------------|
 | `DOMAIN` | `node68.lunes.host` | 系统分配的域名，用于 SSL 证书 CN |
-| `VERSION` | `v4.2.3` | 要安装的 OpenList 版本 |
+| `VERSION` | 自动检测 | OpenList 版本（GitHub API 自动获取） |
 | `LITE` | `false` | 安装精简版（`true`/`false`） |
+| `KOMARI_ENABLED` | `true` | 是否启用 Komari Agent（仅 install2.sh） |
+| `KOMARI_VERSION` | 自动检测 | Komari Agent 版本（GitHub API 自动获取） |
+| `KOMARI_SERVER` | `http://localhost:9182` | Komari 服务器地址（仅 install2.sh） |
+| `KOMARI_TOKEN` | `default` | Komari 认证令牌（仅 install2.sh） |
 
 ### 安装脚本详情
 
-`install.sh` 执行时会依次完成以下 5 个步骤，每个步骤均带有时间戳和彩色日志输出：
+基础安装脚本 `install.sh` 执行步骤：
 
 | 步骤 | 内容 |
 |------|------|
@@ -57,7 +71,17 @@
 | **Step 4** | 解压与安装 — 解压、清理临时文件、设置可执行权限、验证文件完整性 |
 | **Step 5** | 生成 SSL 自签名证书 — 以 `DOMAIN` 为 CN 生成 3650 天有效期的证书 |
 
-安装完成后会输出**安装总结**，包括执行统计（成功/警告/错误数）、文件清单及大小，以及后续操作建议。
+增强安装脚本 `install2.sh` 执行步骤：
+
+| 步骤 | 内容 |
+|------|------|
+| **Step 1** | 环境检查 — 检测依赖工具，检查磁盘空间 |
+| **Step 2** | 下载应用文件 — 拉取 `app2.js`（含 Komari Agent 配置）和 `package.json`，重命名为 `app.js` |
+| **Step 3** | 下载 OpenList 二进制 — 根据 `LITE` 变量选择版本 |
+| **Step 4** | 下载 Komari Agent 二进制 — 创建安装目录、下载 agent（通过 `KOMARI_ENABLED` 控制） |
+| **Step 5** | 验证 SHA256 校验和 — 分别校验 OpenList 和 Komari Agent 的 SHA256（通过 GitHub API） |
+| **Step 6** | 解压并安装 — 解压 OpenList、安装 Komari Agent、设置权限、验证文件完整性 |
+| **Step 7** | 生成 SSL 自签名证书 |
 
 ## 配置
 
