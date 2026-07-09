@@ -30,7 +30,7 @@ This project provides all the files needed to quickly deploy OpenList on a Lunes
 5. Once the node is running, execute the following command in the console to install OpenList:
 
     ```bash
-    curl -s https://raw.githubusercontent.com/zhz8888/openlist-on-lunes/refs/heads/main/install.sh | env DOMAIN=node68.lunes.host VERSION='v4.2.3' LITE=false bash
+    curl -s https://raw.githubusercontent.com/zhz8888/lunes-bedroom/refs/heads/main/openlist/install.sh | env DOMAIN=node68.lunes.host VERSION='v4.2.3' LITE=false bash
     ```
 
     > Replace `node68.lunes.host` with the domain assigned to your node.

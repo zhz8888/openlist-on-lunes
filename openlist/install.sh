@@ -150,6 +150,77 @@ if [ ! -f openlist-linux-amd64.tar.gz ]; then
 fi
 
 # ──────────────────────────────────────────
+# Step 3.5: Verify SHA256 Checksum (via GitHub API)
+# ──────────────────────────────────────────
+log_step "Verify SHA256 Checksum"
+
+ARCHIVE_FILE="openlist-linux-amd64.tar.gz"
+ARCHIVE_FILENAME=$(basename "${DOWNLOAD_URL}")
+
+log_info "Fetching release info from GitHub API..."
+_gh_api="https://api.github.com/repos/OpenListTeam/OpenList/releases/tags/${VERSION}"
+
+# Fetch release info with HTTP status code
+_api_resp=$(curl -sSL --connect-timeout 10 --max-time 15 \
+  -w "\n%{http_code}" "$_gh_api" 2>&1) || true
+_api_code=$(echo "$_api_resp" | sed -n '$p')
+_api_body=$(echo "$_api_resp" | sed '$d')
+
+if [ "$_api_code" != "200" ]; then
+  log_warn "GitHub API returned HTTP ${_api_code}, unable to fetch checksum, skipping verification"
+else
+  # Find the SHA256 checksum asset URL matching the downloaded archive
+  _checksum_url=$(echo "$_api_body" | \
+    grep -o '"browser_download_url": "[^"]*'"${ARCHIVE_FILENAME}"'\.sha256"' | \
+    cut -d'"' -f4)
+
+  if [ -z "$_checksum_url" ]; then
+    log_warn "No SHA256 checksum asset found in release, skipping verification"
+  else
+    log_info "Downloading checksum file..."
+    if curl -sSL -o "${ARCHIVE_FILE}.sha256" --connect-timeout 10 --max-time 15 "$_checksum_url"; then
+      # Expected hash is the first whitespace-separated field
+      read -r EXPECTED_HASH _ < "${ARCHIVE_FILE}.sha256" || true
+
+      # Compute local SHA256 hash
+      if command -v sha256sum >/dev/null 2>&1; then
+        LOCAL_HASH=$(sha256sum "$ARCHIVE_FILE" | awk '{print $1}')
+      elif command -v openssl >/dev/null 2>&1; then
+        LOCAL_HASH=$(openssl dgst -sha256 "$ARCHIVE_FILE" 2>/dev/null | awk '{print $NF}')
+        if [ -z "$LOCAL_HASH" ]; then
+          log_error "Failed to compute local SHA256 hash via openssl"
+          rm -f "${ARCHIVE_FILE}.sha256"
+          exit 1
+        fi
+      else
+        log_error "No SHA256 utility available (sha256sum or openssl required)"
+        rm -f "${ARCHIVE_FILE}.sha256"
+        exit 1
+      fi
+
+      echo ""
+      echo "  Expected SHA256: ${EXPECTED_HASH}"
+      echo "  Local SHA256:    ${LOCAL_HASH}"
+      echo ""
+
+      if [ "$EXPECTED_HASH" = "$LOCAL_HASH" ]; then
+        log_ok "SHA256 checksum verification — passed"
+      else
+        log_error "SHA256 checksum verification — failed (file may be corrupted or tampered)"
+        log_error "Expected: ${EXPECTED_HASH}"
+        log_error "Got:      ${LOCAL_HASH}"
+        rm -f "${ARCHIVE_FILE}.sha256"
+        exit 1
+      fi
+
+      rm -f "${ARCHIVE_FILE}.sha256"
+    else
+      log_warn "Failed to download SHA256 checksum file, skipping verification"
+    fi
+  fi
+fi
+
+# ──────────────────────────────────────────
 # Step 4: Extract and Install
 # ──────────────────────────────────────────
 log_step "Extract and Install"

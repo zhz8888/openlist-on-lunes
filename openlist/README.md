@@ -30,7 +30,7 @@
 5. 节点启动后，在控制台中执行以下命令安装 OpenList：
 
     ```bash
-    curl -s https://raw.githubusercontent.com/zhz8888/openlist-on-lunes/refs/heads/main/install.sh | env DOMAIN=node68.lunes.host VERSION='v4.2.3' LITE=false bash
+    curl -s https://raw.githubusercontent.com/zhz8888/lunes-bedroom/refs/heads/main/openlist/install.sh | env DOMAIN=node68.lunes.host VERSION='v4.2.3' LITE=false bash
     ```
 
     > 请将 `node68.lunes.host` 替换为系统分配的域名。

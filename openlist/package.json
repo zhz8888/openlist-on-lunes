@@ -1,6 +1,6 @@
 {
-  "name": "openlist-on-lunes",
-  "version": "1.0.2",
+  "name": "lunes-bedroom-openlist",
+  "version": "1.1.0",
   "description": "OpenList Startup Script for Lunes Host LLC",
   "main": "app.js",
   "scripts": {
