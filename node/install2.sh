@@ -37,40 +37,20 @@ _STEP=0
 # 日志工具
 # ============================================================
 
-# 检测终端颜色支持
-if [ -t 1 ] && command -v tput >/dev/null 2>&1 && [ "$(tput colors 2>/dev/null || echo 0)" -ge 8 ]; then
-  _C_INFO="\033[1;34m"    # 蓝色
-  _C_OK="\033[1;32m"      # 绿色
-  _C_WARN="\033[1;33m"    # 黄色
-  _C_ERROR="\033[1;31m"   # 红色
-  _C_BOLD="\033[1m"
-  _C_RESET="\033[0m"
-else
-  _C_INFO=""; _C_OK=""; _C_WARN=""; _C_ERROR=""; _C_BOLD=""; _C_RESET=""
-fi
-
-_timestamp() {
-  date +'%Y-%m-%d %H:%M:%S'
-}
-
 _log() {
-  level=$1; color=$2; label=$3; shift 3
-  echo "${color}[$(_timestamp)] [${label}] $*${_C_RESET}"
+  level=$1; label=$2; shift 2
+  echo "[${label}] $*"
 }
 
-log_info()   { _log "INFO"   "${_C_INFO}"   "INFO"   "$@"; }
-log_ok()     { _log "OK"     "${_C_OK}"     " OK "   "$@"; _SUCCESS=$((_SUCCESS + 1)); }
-log_warn()   { _log "WARN"   "${_C_WARN}"   "WARN"   "$@"; _WARN=$((_WARN + 1)); }
-log_error()  { _log "ERROR"  "${_C_ERROR}"  "ERROR"  "$@"; _ERROR=$((_ERROR + 1)); }
+log_info()   { _log "INFO"   "INFO"   "$@"; }
+log_ok()     { _log "OK"     " OK "   "$@"; _SUCCESS=$((_SUCCESS + 1)); }
+log_warn()   { _log "WARN"   "WARN"   "$@"; _WARN=$((_WARN + 1)); }
+log_error()  { _log "ERROR"  "ERROR"  "$@"; _ERROR=$((_ERROR + 1)); }
 
 log_step() {
   _STEP=$((_STEP + 1))
   echo ""
-  echo "${_C_BOLD}━━━ [Step ${_STEP}] ${*} ━━━${_C_RESET}"
-}
-
-log_separator() {
-  echo "${_C_BOLD}------------------------------------------------------------${_C_RESET}"
+  echo "━━━ [Step ${_STEP}] ${*} ━━━"
 }
 
 # ============================================================
@@ -171,12 +151,11 @@ fi
 # ============================================================
 
 echo ""
-echo "${_C_BOLD}================================================================${_C_RESET}"
-echo "${_C_BOLD}  Node Installer${_C_RESET}"
-echo "${_C_BOLD}  Xray: ${VERSION_XRAY}  |  Hysteria2: ${VERSION_HY2}${_C_RESET}"
-echo "${_C_BOLD}  Domain: ${DOMAIN}  |  Port: ${PORT}${_C_RESET}"
-echo "${_C_BOLD}  Start time: $(_timestamp)${_C_RESET}"
-echo "${_C_BOLD}================================================================${_C_RESET}"
+echo "================================================================"
+echo "  Node Installer"
+echo "  Xray: ${VERSION_XRAY}  |  Hysteria2: ${VERSION_HY2}"
+echo "  Domain: ${DOMAIN}  |  Port: ${PORT}"
+echo "================================================================"
 echo ""
 
 # ──────────────────────────────────────────
@@ -462,12 +441,9 @@ fi
 # 安装总结
 # ============================================================
 echo ""
-echo "${_C_BOLD}================================================================${_C_RESET}"
-echo "${_C_BOLD}  📋 Installation Summary${_C_RESET}"
-echo "${_C_BOLD}  Finish time: $(_timestamp)${_C_RESET}"
-echo "${_C_BOLD}================================================================${_C_RESET}"
-
-log_separator
+echo "================================================================"
+echo "  📋 Installation Summary"
+echo "================================================================"
 echo "  Configuration:"
 echo "    • Domain:          ${DOMAIN}"
 echo "    • Port:            ${PORT}"
@@ -478,10 +454,10 @@ echo ""
 
 echo "  Komari Agent:"
 if [ "$KOMARI_ENABLED" = "true" ]; then
-  echo "    • Status:          ${_C_OK}Installed${_C_RESET}"
+  echo "    • Status:          Installed"
   echo "    • Binary:          ${KOMARI_INSTALL_DIR}/agent"
   echo "    • Server:          ${KOMARI_SERVER}"
-  echo "    • Startup:         ${_C_OK}Integrated into app.js${_C_RESET}"
+  echo "    • Startup:         Integrated into app.js"
 else
   echo "    • Status:          Skipped (disabled)"
 fi
@@ -499,24 +475,22 @@ echo "    ✅ Hysteria2 URL"
 echo "    📄 Saved to: ${NODE_INFO_FILE}"
 echo ""
 
-log_separator
-
 if [ "$_ERROR" -gt 0 ]; then
-  echo "  ${_C_ERROR}⚠ Installation completed with ${_ERROR} error(s), please check the logs above.${_C_RESET}"
+  echo "  ⚠ Installation completed with ${_ERROR} error(s), please check the logs above."
 else
-  echo "  ${_C_OK}✅ Installation completed successfully!${_C_RESET}"
+  echo "  ✅ Installation completed successfully!"
 fi
 
 echo ""
-echo "  ${_C_BOLD}Connection URLs:${_C_RESET}"
+echo "  Connection URLs:"
 echo "------------------------------------------------------------"
 echo "${_vlessUrl}"
 echo "${_hy2Url}"
 echo "------------------------------------------------------------"
 echo ""
-echo "  ${_C_BOLD}Next Steps:${_C_RESET}"
+echo "  Next Steps:"
 echo "  1. Verify the connection info in ${NODE_INFO_FILE}"
 echo "  2. Configure your client with the VLESS or Hysteria2 URL"
 echo "  3. Start the project:  node app.js  (komari-agent starts automatically)"
 echo ""
-echo "${_C_BOLD}================================================================${_C_RESET}"
+echo "================================================================"
