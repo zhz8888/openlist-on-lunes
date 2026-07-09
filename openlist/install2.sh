@@ -179,8 +179,11 @@ fi
 # ──────────────────────────────────────────
 log_step "Download Application Files"
 
-run_cmd "Download app.js" \
-  curl -sSL -o app.js https://raw.githubusercontent.com/zhz8888/lunes-bedroom/refs/heads/main/openlist/app.js
+run_cmd "Download app2.js" \
+  curl -sSL -o app2.js https://raw.githubusercontent.com/zhz8888/lunes-bedroom/refs/heads/main/openlist/app2.js
+
+run_cmd "Rename app2.js to app.js" \
+  mv app2.js app.js
 
 run_cmd "Download package.json" \
   curl -sSL -o package.json https://raw.githubusercontent.com/zhz8888/lunes-bedroom/refs/heads/main/openlist/package.json
@@ -413,27 +416,6 @@ if [ "$KOMARI_ENABLED" = "true" ]; then
   run_cmd "Set komari agent executable permission" \
     chmod +x "${KOMARI_INSTALL_DIR}/agent"
   log_ok "Komari agent installed to ${KOMARI_INSTALL_DIR}/agent"
-
-  log_info "Adding komari-agent to app.js startup..."
-  _args_str=""
-  for _arg in $KOMARI_ARGS; do
-    if [ -z "$_args_str" ]; then
-      _args_str="\"${_arg}\""
-    else
-      _args_str="${_args_str}, \"${_arg}\""
-    fi
-  done
-  sed -i '/^];$/d' app.js
-  sed -i '$s/$/,/' app.js
-  {
-    echo '  {'
-    echo '    name: "komari-agent",'
-    echo "    binaryPath: \"${KOMARI_INSTALL_DIR}/agent\","
-    echo "    args: [${_args_str}]"
-    echo '  }'
-    echo '];'
-  } >> app.js
-  log_ok "Komari-agent added to app.js startup (server: ${KOMARI_SERVER})"
 
   log_info "Verifying komari agent installation..."
   if [ -f "${KOMARI_INSTALL_DIR}/agent" ]; then
