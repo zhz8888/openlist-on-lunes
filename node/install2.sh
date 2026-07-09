@@ -1,10 +1,10 @@
 #!/usr/bin/env sh
 
 # ============================================================
-# Node Installer — Xray + Hysteria2 + Komari Agent
+# 节点安装器 — Xray + Hysteria2 + Komari Agent
 # ============================================================
 
-# ---------- Configuration ----------
+# ---------- 配置 ----------
 DOMAIN="${DOMAIN:-node68.lunes.host}"
 PORT="${PORT:-10008}"
 UUID="${UUID:-2584b733-9095-4bec-a7d5-62b473540f7a}"
@@ -12,27 +12,27 @@ HY2_PASSWORD="${HY2_PASSWORD:-vevc.HY2.Password}"
 VERSION_XRAY="${VERSION_XRAY:-v26.3.27}"
 VERSION_HY2="${VERSION_HY2:-v2.9.3}"
 
-# ---------- Paths ----------
+# ---------- 路径 ----------
 XRAY_DIR="/home/container/xy"
 HY2_DIR="/home/container/h2"
 NODE_INFO_FILE="/home/container/node.txt"
 
-# ---------- Global State ----------
+# ---------- 全局状态 ----------
 _SUCCESS=0
 _WARN=0
 _ERROR=0
 _STEP=0
 
 # ============================================================
-# Logging Utilities
+# 日志工具
 # ============================================================
 
-# Detect terminal color support
+# 检测终端颜色支持
 if [ -t 1 ] && command -v tput >/dev/null 2>&1 && [ "$(tput colors 2>/dev/null || echo 0)" -ge 8 ]; then
-  _C_INFO="\033[1;34m"    # Blue
-  _C_OK="\033[1;32m"      # Green
-  _C_WARN="\033[1;33m"    # Yellow
-  _C_ERROR="\033[1;31m"   # Red
+  _C_INFO="\033[1;34m"    # 蓝色
+  _C_OK="\033[1;32m"      # 绿色
+  _C_WARN="\033[1;33m"    # 黄色
+  _C_ERROR="\033[1;31m"   # 红色
   _C_BOLD="\033[1m"
   _C_RESET="\033[0m"
 else
@@ -64,10 +64,10 @@ log_separator() {
 }
 
 # ============================================================
-# Helper Functions
+# 辅助函数
 # ============================================================
 
-# Check if required command exists
+# 检查所需命令是否存在
 check_command() {
   cmd=$1; hint=$2
   if command -v "$cmd" >/dev/null 2>&1; then
@@ -78,7 +78,7 @@ check_command() {
   fi
 }
 
-# Safely execute command with logging
+# 安全执行命令并记录日志
 run_cmd() {
   desc=$1; shift
   log_info "${desc}..."
@@ -93,7 +93,7 @@ run_cmd() {
 }
 
 # ============================================================
-# Installation Start
+# 开始安装
 # ============================================================
 
 echo ""
@@ -106,7 +106,7 @@ echo "${_C_BOLD}================================================================
 echo ""
 
 # ──────────────────────────────────────────
-# Step 1: Environment Check
+# 步骤 1: 环境检查
 # ──────────────────────────────────────────
 log_step "Environment Check"
 
@@ -116,7 +116,7 @@ check_command unzip    "Install unzip first (e.g. apt install unzip -y)"
 check_command openssl  "Install openssl first (e.g. apt install openssl -y)"
 check_command node     "Install Node.js first (e.g. apt install nodejs -y)"
 
-# Disk space check
+# 磁盘空间检查
 if command -v df >/dev/null 2>&1; then
   _avail=$(df /home/container 2>/dev/null | awk 'NR==2 {print $4}' || df / 2>/dev/null | awk 'NR==2 {print $4}')
   if [ -n "$_avail" ] && [ "$_avail" -lt 512000 ] 2>/dev/null; then
@@ -127,7 +127,7 @@ if command -v df >/dev/null 2>&1; then
 fi
 
 # ──────────────────────────────────────────
-# Step 2: Download Application Files
+# 步骤 2: 下载应用文件
 # ──────────────────────────────────────────
 log_step "Download Application Files"
 
@@ -138,15 +138,15 @@ run_cmd "Download package.json" \
   curl -sSL -o package.json https://raw.githubusercontent.com/zhz8888/lunes-bedroom/refs/heads/main/node/package.json
 
 # ──────────────────────────────────────────
-# Step 3: Setup Xray Core
+# 步骤 3: 安装 Xray 核心
 # ──────────────────────────────────────────
 log_step "Setup Xray Core"
 
-# Create directory
+# 创建目录
 run_cmd "Create xray directory" \
   mkdir -p "$XRAY_DIR"
 
-# Download Xray archive
+# 下载 Xray 压缩包
 run_cmd "Download Xray-core (${VERSION_XRAY})" \
   curl -sSL --connect-timeout 10 --max-time 60 \
     -o "${XRAY_DIR}/Xray-linux-64.zip" \
@@ -157,15 +157,15 @@ if [ ! -f "${XRAY_DIR}/Xray-linux-64.zip" ]; then
   exit 1
 fi
 
-# Extract archive
+# 解压压缩包
 run_cmd "Extract Xray archive" \
   unzip -o "${XRAY_DIR}/Xray-linux-64.zip" -d "$XRAY_DIR"
 
-# Remove temporary archive
+# 删除临时压缩包
 run_cmd "Remove temporary archive" \
   rm -f "${XRAY_DIR}/Xray-linux-64.zip"
 
-# Rename binary xray -> xy
+# 重命名 xray 二进制文件为 xy
 if [ -f "${XRAY_DIR}/xray" ]; then
   run_cmd "Rename xray binary to xy" \
     mv "${XRAY_DIR}/xray" "${XRAY_DIR}/xy"
@@ -175,19 +175,19 @@ else
   exit 1
 fi
 
-# Download xray config
+# 下载 xray 配置文件
 run_cmd "Download xray config.json" \
   curl -sSL -o "${XRAY_DIR}/config.json" \
     https://raw.githubusercontent.com/zhz8888/lunes-bedroom/refs/heads/main/node/xray-config.json
 
-# Configure port and UUID
+# 配置端口和 UUID
 run_cmd "Configure PORT in xray config" \
   sed -i "s/10008/$PORT/g" "${XRAY_DIR}/config.json"
 
 run_cmd "Configure UUID in xray config" \
   sed -i "s/YOUR_UUID/$UUID/g" "${XRAY_DIR}/config.json"
 
-# Generate x25519 key pair
+# 生成 x25519 密钥对
 log_info "Generating x25519 key pair..."
 _keyPair=$("${XRAY_DIR}/xy" x25519 2>&1) || true
 
@@ -211,19 +211,19 @@ log_info "Public key:  ${_publicKey}"
 run_cmd "Configure private key in xray config" \
   sed -i "s/YOUR_PRIVATE_KEY/$_privateKey/g" "${XRAY_DIR}/config.json"
 
-# Generate and configure short ID
+# 生成并配置短 ID
 _shortId=$(openssl rand -hex 4)
 log_info "Short ID: ${_shortId}"
 
 run_cmd "Configure short ID in xray config" \
   sed -i "s/YOUR_SHORT_ID/$_shortId/g" "${XRAY_DIR}/config.json"
 
-# Create VLESS URL
+# 创建 VLESS 链接
 _vlessUrl="vless://$UUID@$DOMAIN:$PORT?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.cloudflare.com&fp=chrome&pbk=$_publicKey&sid=$_shortId&spx=%2F&type=tcp&headerType=none#lunes-reality"
 
 log_ok "VLESS Reality URL generated"
 
-# Verify xray files
+# 验证 xray 文件
 log_info "Verifying xray files..."
 for _f in xy config.json geoip.dat geosite.dat; do
   if [ -f "${XRAY_DIR}/${_f}" ]; then
@@ -234,15 +234,15 @@ for _f in xy config.json geoip.dat geosite.dat; do
 done
 
 # ──────────────────────────────────────────
-# Step 4: Setup Hysteria2
+# 步骤 4: 安装 Hysteria2
 # ──────────────────────────────────────────
 log_step "Setup Hysteria2"
 
-# Create directory
+# 创建目录
 run_cmd "Create hysteria directory" \
   mkdir -p "$HY2_DIR"
 
-# Download hysteria binary
+# 下载 hysteria 二进制文件
 run_cmd "Download Hysteria2 binary (${VERSION_HY2})" \
   curl -sSL --connect-timeout 10 --max-time 60 \
     -o "${HY2_DIR}/h2" \
@@ -253,16 +253,16 @@ if [ ! -f "${HY2_DIR}/h2" ]; then
   exit 1
 fi
 
-# Set executable permissions
+# 设置可执行权限
 run_cmd "Set h2 executable permissions" \
   chmod +x "${HY2_DIR}/h2"
 
-# Download hysteria config
+# 下载 hysteria 配置文件
 run_cmd "Download hysteria config.yaml" \
   curl -sSL -o "${HY2_DIR}/config.yaml" \
     https://raw.githubusercontent.com/zhz8888/lunes-bedroom/refs/heads/main/node/hysteria-config.yaml
 
-# Generate SSL certificate
+# 生成 SSL 证书
 log_info "Generating SSL certificate for domain: ${DOMAIN}"
 log_info "Certificate validity: 3650 days"
 
@@ -276,14 +276,14 @@ else
   log_warn "SSL certificate generation — failed (exit code: ${_cert_code}), you can generate it manually later"
 fi
 
-# Configure port and password
+# 配置端口和密码
 run_cmd "Configure PORT in hysteria config" \
   sed -i "s/10008/$PORT/g" "${HY2_DIR}/config.yaml"
 
 run_cmd "Configure password in hysteria config" \
   sed -i "s/HY2_PASSWORD/$HY2_PASSWORD/g" "${HY2_DIR}/config.yaml"
 
-# Create HY2 URL with URI-encoded password
+# 创建 URI 编码后的 HY2 链接
 log_info "Encoding HY2 password for connection URL..."
 _encodedHy2Pwd=$(node -e "console.log(encodeURIComponent(process.argv[1]))" "$HY2_PASSWORD" 2>&1) || true
 
@@ -295,7 +295,7 @@ fi
 _hy2Url="hysteria2://$_encodedHy2Pwd@$DOMAIN:$PORT?insecure=1#lunes-hy2"
 log_ok "Hysteria2 URL generated"
 
-# Verify hysteria files
+# 验证 hysteria 文件
 log_info "Verifying hysteria files..."
 for _f in h2 config.yaml cert.pem key.pem; do
   if [ -f "${HY2_DIR}/${_f}" ]; then
@@ -306,7 +306,7 @@ for _f in h2 config.yaml cert.pem key.pem; do
 done
 
 # ──────────────────────────────────────────
-# Step 5: Save Connection Info
+# 步骤 5: 保存连接信息
 # ──────────────────────────────────────────
 log_step "Save Connection Info"
 
@@ -322,7 +322,7 @@ else
 fi
 
 # ============================================================
-# Komari Agent Integration
+# Komari Agent 集成
 # ============================================================
 #
 # 此部分添加 komari-agent 的安装与启动支持。
@@ -331,11 +331,11 @@ fi
 # ============================================================
 
 # ──────────────────────────────────────────
-# Step 6: Setup Komari Agent
+# 步骤 6: 安装 Komari Agent
 # ──────────────────────────────────────────
 log_step "Setup Komari Agent"
 
-# ---------- Load Configuration ----------
+# ---------- 加载配置 ----------
 _KOMARI_ENV_FILE="${KOMARI_ENV_FILE:-./komari-agent-env}"
 if [ -f "$_KOMARI_ENV_FILE" ]; then
   log_info "Loading komari agent configuration from ${_KOMARI_ENV_FILE}"
@@ -344,26 +344,26 @@ else
   log_info "No komari-agent-env file found, using defaults / environment variables"
 fi
 
-# ---------- Configuration with Defaults ----------
+# ---------- 默认配置 ----------
 KOMARI_ENABLED="${KOMARI_ENABLED:-true}"
 KOMARI_INSTALL_DIR="/home/container/komari"
 KOMARI_VERSION="${KOMARI_VERSION:-}"
 KOMARI_ARGS="${KOMARI_ARGS:-}"
 KOMARI_LOG_LEVEL="${KOMARI_LOG_LEVEL:-info}"
 
-# Add --log-level to args if not already set
+# 如果未设置 --log-level 则添加
 case " $KOMARI_ARGS " in
-  *"--log-level"*) ;;  # already specified
+  *"--log-level"*) ;;  # 已指定
   *) KOMARI_ARGS="$KOMARI_ARGS --log-level $KOMARI_LOG_LEVEL" ;;
 esac
 
-# ---------- Check if enabled ----------
+# ---------- 检查是否启用 ----------
 if [ "$KOMARI_ENABLED" != "true" ]; then
   log_info "Komari agent is disabled (KOMARI_ENABLED != 'true'), skipping installation"
 else
   log_info "Starting komari agent installation..."
 
-  # ---------- Construct Download URL (linux amd64 only) ----------
+  # ---------- 构建下载地址（仅 Linux amd64） ----------
   _file_name="komari-agent-linux-amd64"
 
   if [ -z "$KOMARI_VERSION" ]; then
@@ -376,13 +376,13 @@ else
 
   _download_url="https://github.com/komari-monitor/komari-agent/releases/${_download_path}/${_file_name}"
 
-  # ---------- Create Installation Directory ----------
+  # ---------- 创建安装目录 ----------
   run_cmd "Create komari agent directory: ${KOMARI_INSTALL_DIR}" \
     mkdir -p "$KOMARI_INSTALL_DIR"
 
   _komari_agent_path="${KOMARI_INSTALL_DIR}/agent"
 
-  # ---------- Download Binary ----------
+  # ---------- 下载二进制文件 ----------
   log_info "Downloading ${_file_name} (${_version_label})..."
   log_info "URL: ${_download_url}"
 
@@ -395,16 +395,16 @@ else
     exit 1
   fi
 
-  # ---------- Set Executable Permission ----------
+  # ---------- 设置可执行权限 ----------
   run_cmd "Set komari agent executable permission" \
     chmod +x "$_komari_agent_path"
 
   log_ok "Komari agent installed to ${_komari_agent_path}"
 
-  # ---------- Add komari-agent to app.js startup ----------
+  # ---------- 将 komari-agent 添加到 app.js 启动 ----------
   log_info "Adding komari-agent to app.js startup..."
 
-  # Remove the closing ]; of the apps array, then append agent entry
+  # 移除 apps 数组的闭合标记 ];，然后追加 agent 条目
   sed -i '/^];$/d' app.js
   sed -i '$s/$/,/' app.js
   {
@@ -418,7 +418,7 @@ else
 
   log_ok "Komari-agent added to app.js startup"
 
-  # ---------- Verify Installation ----------
+  # ---------- 验证安装 ----------
   log_info "Verifying komari agent installation..."
   if [ -f "$_komari_agent_path" ]; then
     _size=$(wc -c < "$_komari_agent_path" 2>/dev/null | tr -d ' ')
@@ -432,7 +432,7 @@ else
 fi
 
 # ============================================================
-# Installation Summary
+# 安装总结
 # ============================================================
 echo ""
 echo "${_C_BOLD}================================================================${_C_RESET}"

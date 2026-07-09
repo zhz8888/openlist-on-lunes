@@ -1,30 +1,30 @@
 #!/usr/bin/env sh
 
 # ============================================================
-# OpenList Installer — OpenList + Komari Agent
+# OpenList 安装器 — OpenList + Komari Agent
 # ============================================================
 
-# ---------- Configuration ----------
+# ---------- 配置 ----------
 DOMAIN="${DOMAIN:-node68.lunes.host}"
 VERSION="${VERSION:-v4.2.3}"
 LITE="${LITE:-false}"
 
-# ---------- Global State ----------
+# ---------- 全局状态 ----------
 _SUCCESS=0
 _WARN=0
 _ERROR=0
 _STEP=0
 
 # ============================================================
-# Logging Utilities
+# 日志工具
 # ============================================================
 
-# Detect terminal color support
+# 检测终端颜色支持
 if [ -t 1 ] && command -v tput >/dev/null 2>&1 && [ "$(tput colors 2>/dev/null || echo 0)" -ge 8 ]; then
-  _C_INFO="\033[1;34m"    # Blue
-  _C_OK="\033[1;32m"      # Green
-  _C_WARN="\033[1;33m"    # Yellow
-  _C_ERROR="\033[1;31m"   # Red
+  _C_INFO="\033[1;34m"    # 蓝色
+  _C_OK="\033[1;32m"      # 绿色
+  _C_WARN="\033[1;33m"    # 黄色
+  _C_ERROR="\033[1;31m"   # 红色
   _C_BOLD="\033[1m"
   _C_RESET="\033[0m"
 else
@@ -56,10 +56,10 @@ log_separator() {
 }
 
 # ============================================================
-# Helper Functions
+# 辅助函数
 # ============================================================
 
-# Check if required command exists
+# 检查所需命令是否存在
 check_command() {
   cmd=$1; hint=$2
   if command -v "$cmd" >/dev/null 2>&1; then
@@ -70,7 +70,7 @@ check_command() {
   fi
 }
 
-# Safely execute command with logging
+# 安全执行命令并记录日志
 run_cmd() {
   desc=$1; shift
   log_info "${desc}..."
@@ -85,7 +85,7 @@ run_cmd() {
 }
 
 # ============================================================
-# Installation Start
+# 开始安装
 # ============================================================
 
 echo ""
@@ -97,7 +97,7 @@ echo "${_C_BOLD}================================================================
 echo ""
 
 # ──────────────────────────────────────────
-# Step 1: Environment Check
+# 步骤 1: 环境检查
 # ──────────────────────────────────────────
 log_step "Environment Check"
 
@@ -105,7 +105,7 @@ check_command curl     "Install curl first (e.g. apt install curl -y)"
 check_command tar      "Install tar first (e.g. apt install tar -y)"
 check_command openssl  "Install openssl first (e.g. apt install openssl -y)"
 
-# Disk space check (optional)
+# 磁盘空间检查（可选）
 if command -v df >/dev/null 2>&1; then
   _avail=$(df /home/container 2>/dev/null | awk 'NR==2 {print $4}' || df / 2>/dev/null | awk 'NR==2 {print $4}')
   if [ -n "$_avail" ] && [ "$_avail" -lt 102400 ] 2>/dev/null; then
@@ -116,7 +116,7 @@ if command -v df >/dev/null 2>&1; then
 fi
 
 # ──────────────────────────────────────────
-# Step 2: Download Application Files
+# 步骤 2: 下载应用文件
 # ──────────────────────────────────────────
 log_step "Download Application Files"
 
@@ -127,7 +127,7 @@ run_cmd "Download package.json" \
   curl -sSL -o package.json https://raw.githubusercontent.com/zhz8888/lunes-bedroom/refs/heads/main/openlist/package.json
 
 # ──────────────────────────────────────────
-# Step 3: Download OpenList Binary
+# 步骤 3: 下载 OpenList 二进制文件
 # ──────────────────────────────────────────
 log_step "Download OpenList Binary"
 
@@ -150,7 +150,7 @@ if [ ! -f openlist-linux-amd64.tar.gz ]; then
 fi
 
 # ──────────────────────────────────────────
-# Step 3.5: Verify SHA256 Checksum (via GitHub API)
+# 步骤 3.5: 验证 SHA256 校验和（通过 GitHub API）
 # ──────────────────────────────────────────
 log_step "Verify SHA256 Checksum"
 
@@ -160,7 +160,7 @@ ARCHIVE_FILENAME=$(basename "${DOWNLOAD_URL}")
 log_info "Fetching release info from GitHub API..."
 _gh_api="https://api.github.com/repos/OpenListTeam/OpenList/releases/tags/${VERSION}"
 
-# Fetch release info with HTTP status code
+# 获取带 HTTP 状态码的版本信息
 _api_resp=$(curl -sSL --connect-timeout 10 --max-time 15 \
   -w "\n%{http_code}" "$_gh_api" 2>&1) || true
 _api_code=$(echo "$_api_resp" | sed -n '$p')
@@ -169,7 +169,7 @@ _api_body=$(echo "$_api_resp" | sed '$d')
 if [ "$_api_code" != "200" ]; then
   log_warn "GitHub API returned HTTP ${_api_code}, unable to fetch checksum, skipping verification"
 else
-  # Find the SHA256 checksum asset URL matching the downloaded archive
+  # 查找与下载压缩包匹配的 SHA256 校验和文件地址
   _checksum_url=$(echo "$_api_body" | \
     grep -o '"browser_download_url": "[^"]*'"${ARCHIVE_FILENAME}"'\.sha256"' | \
     cut -d'"' -f4)
@@ -179,10 +179,10 @@ else
   else
     log_info "Downloading checksum file..."
     if curl -sSL -o "${ARCHIVE_FILE}.sha256" --connect-timeout 10 --max-time 15 "$_checksum_url"; then
-      # Expected hash is the first whitespace-separated field
+      # 期望哈希值为第一个空白字符分隔的字段
       read -r EXPECTED_HASH _ < "${ARCHIVE_FILE}.sha256" || true
 
-      # Compute local SHA256 hash
+      # 计算本地 SHA256 哈希值
       if command -v sha256sum >/dev/null 2>&1; then
         LOCAL_HASH=$(sha256sum "$ARCHIVE_FILE" | awk '{print $1}')
       elif command -v openssl >/dev/null 2>&1; then
@@ -221,7 +221,7 @@ else
 fi
 
 # ──────────────────────────────────────────
-# Step 4: Extract and Install
+# 步骤 4: 解压并安装
 # ──────────────────────────────────────────
 log_step "Extract and Install"
 
@@ -240,7 +240,7 @@ run_cmd "Remove temporary archive" \
 run_cmd "Set executable permissions" \
   chmod +x openlist
 
-# Verify file integrity
+# 验证文件完整性
 log_info "Verifying file integrity..."
 for f in app.js package.json openlist; do
   if [ -f "$f" ]; then
@@ -253,14 +253,14 @@ for f in app.js package.json openlist; do
 done
 
 # ──────────────────────────────────────────
-# Step 5: Generate SSL Certificate
+# 步骤 5: 生成 SSL 证书
 # ──────────────────────────────────────────
 log_step "Generate SSL Self-Signed Certificate"
 
-# Check for existing certificate
+# 检查现有证书
 _skip_cert=false
 if [ -f /home/container/cert.pem ] && [ -f /home/container/key.pem ]; then
-  # Check if certificate is about to expire (regenerate if within 30 days)
+  # 检查证书是否即将过期（如果 30 天内到期则重新生成）
   if command -v openssl >/dev/null 2>&1; then
     _expires=$(openssl x509 -in /home/container/cert.pem -noout -enddate 2>/dev/null | cut -d= -f2)
     log_info "Existing certificate expiry: ${_expires:-unknown}"
@@ -285,7 +285,7 @@ if [ "$_skip_cert" = false ]; then
 fi
 
 # ============================================================
-# Komari Agent Integration
+# Komari Agent 集成
 # ============================================================
 #
 # 此部分添加 komari-agent 的安装与启动支持。
@@ -294,11 +294,11 @@ fi
 # ============================================================
 
 # ──────────────────────────────────────────
-# Step 6: Setup Komari Agent
+# 步骤 6: 安装 Komari Agent
 # ──────────────────────────────────────────
 log_step "Setup Komari Agent"
 
-# ---------- Load Configuration ----------
+# ---------- 加载配置 ----------
 _KOMARI_ENV_FILE="${KOMARI_ENV_FILE:-./komari-agent-env}"
 if [ -f "$_KOMARI_ENV_FILE" ]; then
   log_info "Loading komari agent configuration from ${_KOMARI_ENV_FILE}"
@@ -307,26 +307,26 @@ else
   log_info "No komari-agent-env file found, using defaults / environment variables"
 fi
 
-# ---------- Configuration with Defaults ----------
+# ---------- 默认配置 ----------
 KOMARI_ENABLED="${KOMARI_ENABLED:-true}"
 KOMARI_INSTALL_DIR="/home/container/komari"
 KOMARI_VERSION="${KOMARI_VERSION:-}"
 KOMARI_ARGS="${KOMARI_ARGS:-}"
 KOMARI_LOG_LEVEL="${KOMARI_LOG_LEVEL:-info}"
 
-# Add --log-level to args if not already set
+# 如果未设置 --log-level 则添加
 case " $KOMARI_ARGS " in
-  *"--log-level"*) ;;  # already specified
+  *"--log-level"*) ;;  # 已指定
   *) KOMARI_ARGS="$KOMARI_ARGS --log-level $KOMARI_LOG_LEVEL" ;;
 esac
 
-# ---------- Check if enabled ----------
+# ---------- 检查是否启用 ----------
 if [ "$KOMARI_ENABLED" != "true" ]; then
   log_info "Komari agent is disabled (KOMARI_ENABLED != 'true'), skipping installation"
 else
   log_info "Starting komari agent installation..."
 
-  # ---------- Construct Download URL (linux amd64 only) ----------
+  # ---------- 构建下载地址（仅 Linux amd64）----------
   _file_name="komari-agent-linux-amd64"
 
   if [ -z "$KOMARI_VERSION" ]; then
@@ -339,13 +339,13 @@ else
 
   _download_url="https://github.com/komari-monitor/komari-agent/releases/${_download_path}/${_file_name}"
 
-  # ---------- Create Installation Directory ----------
+  # ---------- 创建安装目录 ----------
   run_cmd "Create komari agent directory: ${KOMARI_INSTALL_DIR}" \
     mkdir -p "$KOMARI_INSTALL_DIR"
 
   _komari_agent_path="${KOMARI_INSTALL_DIR}/agent"
 
-  # ---------- Download Binary ----------
+  # ---------- 下载二进制文件 ----------
   log_info "Downloading ${_file_name} (${_version_label})..."
   log_info "URL: ${_download_url}"
 
@@ -358,16 +358,16 @@ else
     exit 1
   fi
 
-  # ---------- Set Executable Permission ----------
+  # ---------- 设置可执行权限 ----------
   run_cmd "Set komari agent executable permission" \
     chmod +x "$_komari_agent_path"
 
   log_ok "Komari agent installed to ${_komari_agent_path}"
 
-  # ---------- Add komari-agent to app.js startup ----------
+  # ---------- 将 komari-agent 添加到 app.js 启动 ----------
   log_info "Adding komari-agent to app.js startup..."
 
-  # Remove the closing ]; of the apps array, then append agent entry
+  # 移除 apps 数组的闭合标记 ];，然后追加 agent 条目
   sed -i '/^];$/d' app.js
   sed -i '$s/$/,/' app.js
   {
@@ -381,7 +381,7 @@ else
 
   log_ok "Komari-agent added to app.js startup"
 
-  # ---------- Verify Installation ----------
+  # ---------- 验证安装 ----------
   log_info "Verifying komari agent installation..."
   if [ -f "$_komari_agent_path" ]; then
     _size=$(wc -c < "$_komari_agent_path" 2>/dev/null | tr -d ' ')
@@ -395,7 +395,7 @@ else
 fi
 
 # ============================================================
-# Installation Summary
+# 安装总结
 # ============================================================
 echo ""
 echo "${_C_BOLD}================================================================${_C_RESET}"
@@ -426,7 +426,7 @@ echo "    • Warnings:        ${_WARN}"
 echo "    • Errors:          ${_ERROR}"
 echo ""
 
-# Output file status
+# 输出文件状态
 echo "  Files:"
 for f in app.js package.json openlist; do
   if [ -f "$f" ]; then
